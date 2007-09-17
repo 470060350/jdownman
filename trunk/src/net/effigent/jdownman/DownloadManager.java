@@ -6,6 +6,8 @@ package net.effigent.jdownman;
 import java.io.File;
 import java.net.URL;
 
+import net.effigent.jdownman.Download.PRIORITY;
+
 
 
 /**
@@ -20,7 +22,7 @@ public interface DownloadManager {
 	 * @param destinationFile
 	 * @param urls
 	 */
-	public void downloadFile(File destinationFile,URL[] urls) throws DownloadException;
+	public void downloadFile(File destinationFile,URL[] urls,PRIORITY priority) throws DownloadException;
 
 	/**
 	 * 
@@ -35,22 +37,22 @@ public interface DownloadManager {
 	 * 
 	 * @param destinationFile
 	 * @param urls
-	 * @param CRC
+	 * @param md5
 	 * @param length
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,Object CRC, long length) throws DownloadException;
+	public void downloadFile(File destinationFile,URL[] urls,Object md5, long length) throws DownloadException;
 
 	/**
 	 * 
 	 * @param destinationFile
 	 * @param urls
 	 * @param listener
-	 * @param CRC
+	 * @param md5
 	 * @param length
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,DownloadListener listener, Object CRC, long length) throws DownloadException;
+	public void downloadFile(File destinationFile,URL[] urls,DownloadListener listener, Object md5, long length,PRIORITY priority) throws DownloadException;
 
 
 }
