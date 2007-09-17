@@ -12,6 +12,7 @@ import java.net.URL;
 import net.effigent.jdownman.DownloadException;
 import net.effigent.jdownman.DownloadListener;
 import net.effigent.jdownman.DownloadManager;
+import net.effigent.jdownman.Download.PRIORITY;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -24,40 +25,18 @@ import org.apache.commons.io.IOUtils;
  * @author vipul
  *
  */
-public class SimpleDownloadManager implements DownloadManager {
+public class SimpleDownloadManager extends AbstractDownloadManager implements DownloadManager {
 
-
-	/**
-	 * 
-	 */
-	public void downloadFile(File destinationFile, URL[] urls) throws DownloadException {
-		downloadFile(destinationFile,urls,null,null,-1);
-	}
-
-	/**
-	 * 
-	 */
-	public void downloadFile(File destinationFile, URL[] urls, DownloadListener listener) throws DownloadException {
-		downloadFile(destinationFile,urls,listener,null,-1);
-	}
-
-	/**
-	 * 
-	 */
-	public void downloadFile(File destinationFile, URL[] urls, Object CRC, long length) throws DownloadException {
-		downloadFile(destinationFile,urls,null,CRC,length);
-		
-	}
-	/**
+ 	/**
 	 * This is a very simple implementation of DownloadManager that
 	 * - can be used for unit testing
 	 * - entertains only HTTP URLs
 	 * - downloads file only in one single thread
 	 * - downloads once, no failure recovery or anything
-	 * - no CRC check
+	 * - no md5 check
 	 */
 	public void downloadFile(File destinationFile, URL[] urls,
-			DownloadListener listener, Object CRC,long length) throws DownloadException{
+			DownloadListener listener, Object md5,long length,PRIORITY priority) throws DownloadException{
 		
 		URL url = urls[0];
 		if(!url.getProtocol().equalsIgnoreCase("http")) {
@@ -119,7 +98,7 @@ public class SimpleDownloadManager implements DownloadManager {
 		DownloadManager dm = new SimpleDownloadManager();
 		URL[] urls = {new URL("http://localhost/repository/satellite/1000/9000/shrek3.mpg")};
 		
-		dm.downloadFile(new File("temp"), urls);
+		dm.downloadFile(new File("temp"), urls,PRIORITY.NORMAL);
 	}
 
 	
