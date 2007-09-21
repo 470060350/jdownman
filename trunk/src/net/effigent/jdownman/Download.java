@@ -4,6 +4,7 @@
 package net.effigent.jdownman;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import net.effigent.jdownman.util.Splitter;
+import net.effigent.jdownman.split.Splitter;
 
 import org.apache.log4j.Logger;
 
@@ -42,24 +43,8 @@ public abstract class Download {
 	/**
 	 * All the pending downloads
 	 */
-	private Queue<ChunkDownload> pendingChunks = new ConcurrentLinkedQueue<ChunkDownload>();
+	private Queue<ChunkDownload> chunks = new ConcurrentLinkedQueue<ChunkDownload>();
 
-	/**
-	 * 
-	 */
-	private List<ChunkDownload> activeChunks = new LinkedList<ChunkDownload>();
-	
-	/**
-	 * 
-	 */
-	private List<ChunkDownload> completedChunks = new LinkedList<ChunkDownload>();
-	
-	/**
-	 * 
-	 */
-	private List<ChunkDownload> failedChucks = new LinkedList<ChunkDownload>();
-	
-	
 	
 	/**
 	 * 
@@ -189,7 +174,7 @@ public abstract class Download {
 	 */
 	public void split(Splitter splitter) {
 		List<ChunkDownload> chunks = splitter.split(this);
-		pendingChunks.addAll(chunks);
+		this.chunks.addAll(chunks);
 	}
 	
 	/**
@@ -218,7 +203,7 @@ public abstract class Download {
 			throw new DownloadException("unable to create Directory "+workDir.getAbsolutePath());
 		}
 		
-		for(ChunkDownload chunk : pendingChunks) {
+		for(ChunkDownload chunk : chunks) {
 			chunk.setChunkFilePath(workDir.getAbsolutePath()+DELIMITER+chunk.getId());
 		}
 
@@ -374,6 +359,26 @@ public abstract class Download {
 	}
 	
 	
+	/**
+	 * Returns a list of ChunkDownloads for this download
+	 * @return the chunks
+	 */
+	public List<ChunkDownload> getChunks() {
+		
+		List<ChunkDownload> chunkList = new ArrayList<ChunkDownload>();
+		chunkList.addAll(chunks);
+		return chunkList;
+		
+	}
+
+	/**
+	 * 
+	 */
+	public String toString() {
+		return ID+" priority -> "+priority+"  requestedTime : "+downloadRequestTime.toGMTString();
+	}
+	
+	
 
 	// -------------------  GETTERS and SETTERS -------------------   
 
@@ -382,7 +387,7 @@ public abstract class Download {
 	/**
 	 * 
 	 */
-	public class ChunkDownload{
+	public class ChunkDownload implements Runnable{
 
 		/**
 		 * 
@@ -502,6 +507,43 @@ public abstract class Download {
 		 */
 		public void setEndRange(long endRange) {
 			this.endRange = endRange;
+		}
+		
+		/**
+		 * 
+		 */
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			sb.append(" Chunk : ");
+			sb.append(Download.this.getID());
+			sb.append("-"+id);
+			sb.append(" Range : "+beginRange+"-"+endRange);
+			sb.append(" Status : "+status.name());
+			sb.append(" Priority : "+Download.this.getPriority().name());
+			
+			return sb.toString();
+			
+		}
+
+		/**
+		 * 
+		 */
+		public void run() {
+			String threadName = Thread.currentThread().getName();
+			try {
+				Thread.currentThread().setName(threadName+"- Downloading:"+Download.this.ID+"-"+this.id+" - ");
+				System.out.println("\n**** Downloading "+this);
+				try {
+					System.in.read();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println("\tDownloaded "+this);
+				
+			}finally {
+				Thread.currentThread().setName(threadName);
+			}
 		}
 		
 		// -------------------  GETTERS and SETTERS -------------------   
