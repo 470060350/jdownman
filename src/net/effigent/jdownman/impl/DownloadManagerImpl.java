@@ -6,18 +6,17 @@ package net.effigent.jdownman.impl;
 
 import java.io.File;
 import java.net.URL;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 import net.effigent.jdownman.Download;
 import net.effigent.jdownman.DownloadException;
 import net.effigent.jdownman.DownloadListener;
 import net.effigent.jdownman.Download.PRIORITY;
-import net.effigent.jdownman.util.DefaultSplitter;
-import net.effigent.jdownman.util.Splitter;
+import net.effigent.jdownman.queue.DownloadQueue;
+import net.effigent.jdownman.split.DefaultSplitter;
+import net.effigent.jdownman.split.Splitter;
 import net.effigent.jdownman.util.UIDGenerator;
+import net.effigent.jdownman.work.DownloadWorkManager;
 
 import org.apache.log4j.Logger;
 
@@ -43,12 +42,6 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	 */
 	private File workDir = null;
 	
-	/**
-	 * Priority Queue to line up the downloads for processing
-	 * in the order of Priority set for each of the - ordered
-	 * further by the time of creation (DownloadComparator)
-	 */
-	BlockingQueue<Download> downloads = new PriorityBlockingQueue<Download>(1,new DownloadComparator());
 
 	
 	/**
@@ -69,7 +62,18 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	/**
 	 * 
 	 */
+	DownloadQueue downloadQueue = null;
+	
+	
+	/**
+	 * 
+	 */
 	private boolean initialized = false;
+	
+	/**
+	 * 
+	 */
+	DownloadWorkManager workManager = null;
 	
 
 	/**
@@ -106,6 +110,9 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 			splitter = new DefaultSplitter();
 		}
 
+		//set the download queue
+		workManager.setDownloadQueue(downloadQueue);
+		workManager.start(); 
 		
 		initialized = true;
 		
@@ -116,6 +123,7 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 
 	
 	/**
+	 * 
 	 * 
 	 * @param destinationFile
 	 * @param urls
@@ -135,11 +143,12 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 		//get the protocol - assumes that all the URLs are of the same protocol
 		String protocol = urls[0].getProtocol().toLowerCase();
 		
-		// get the download object corresponding to the protocol
+		// get an empty download object corresponding to the protocol
 		Download download = downloadFactory.createDownload(protocol);
 		if(priority == null)
 			priority = PRIORITY.NORMAL;
 		
+		//populate the download object with the relevant values
 		String uid = uidGenerator.generateNewUID();
 		download.setID(uid);
 		download.setPriority(priority);
@@ -148,19 +157,12 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 		download.setTotalFileLength(length);
 		download.setUrls(urls);
 		download.setParentWorkDir(workDir);
-		download.split(splitter);
 		download.setDownloadRequestTime(new Date());
-		
-		try {
-			downloads.put(download);
-		} catch (InterruptedException e) {
-			//never really happens as we are using PriorityBlockingQueue 
-			e.printStackTrace();
-			logger.error("Unable to enqueue download : "+e.getMessage(),e);
-		}
-		
-		
-		// TODO Auto-generated method stub
+		download.addListener(listener);
+		//run the download thorugh the splitter 
+		download.split(splitter);
+		//now that the download information has be collated .. enqueue the download
+		downloadQueue.enqueueDownload(download);
 	}
 
 
@@ -210,31 +212,42 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	public void setWorkDirPath(String workDir) {
 		this.workDirPath = workDir;
 	}
-	
-	
+
+
+
+
+
 	/**
-	 * 
-	 * @author vipul
-	 *
+	 * @return the downloads
 	 */
-	private static class DownloadComparator implements Comparator<Download>{
+	public DownloadQueue getDownloadQueue() {
+		return downloadQueue;
+	}
 
-		/**
-		 * 
-		 */
-		public int compare(Download o1, Download o2) {
-			if(o1.getPriority().getValue() > o2.getPriority().getValue())
-				return 1;
-			if(o1.getPriority().getValue() < o2.getPriority().getValue())
-				return -1;
 
-			if(o1.getDownloadRequestTime().after(o1.getDownloadRequestTime()))
-				return -1;
-			else
-				return 1;
-			
-		}
-		
+
+
+
+	/**
+	 * @param downloads the downloads to set
+	 */
+	public void setDownloadQueue(DownloadQueue downloads) {
+		this.downloadQueue = downloads;
+	}
+
+
+	/**
+	 * @return the workManager
+	 */
+	public DownloadWorkManager getWorkManager() {
+		return workManager;
+	}
+
+	/**
+	 * @param workManager the workManager to set
+	 */
+	public void setWorkManager(DownloadWorkManager workManager) {
+		this.workManager = workManager;
 	}
 	
 	
