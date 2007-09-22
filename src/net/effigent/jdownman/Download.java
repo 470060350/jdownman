@@ -134,7 +134,7 @@ public abstract class Download {
 	/**
 	 * 
 	 */
-	private URL[] urls = null;
+	protected URL[] urls = null;
 	
 	/**
 	 * 
@@ -166,13 +166,22 @@ public abstract class Download {
 	 * @param url
 	 * @param destination
 	 */
-	protected abstract void download(URL url, File destination, int beginRange, int endRange, DownloadMonitor monitor);
+	protected abstract void download(URL url, File destination, long beginRange, long endRange, DownloadMonitor monitor)  throws DownloadException;
+	
+	/**
+	 * 
+	 * get the size of the file 
+	 * @return
+	 */
+	protected abstract long size() throws DownloadException;
 	
 	/**
 	 * 
 	 * @param splitter
+	 * @throws DownloadException 
 	 */
-	public void split(Splitter splitter) {
+	public void split(Splitter splitter) throws DownloadException {
+		totalFileLength = size();
 		List<ChunkDownload> chunks = splitter.split(this);
 		this.chunks.addAll(chunks);
 	}
@@ -305,8 +314,8 @@ public abstract class Download {
 	/**
 	 * @param work_dir the wORK_DIR to set
 	 */
-	public void setParentWorkDir(File workDir) {
-		workDir = workDir;
+	public void setParentWorkDir(File parentWorkDir) {
+		this.parentWorkDir = parentWorkDir;
 	}
 
 	/**
@@ -397,11 +406,6 @@ public abstract class Download {
 		/**
 		 * 
 		 */
-		private URL url = null;
-
-		/**
-		 * 
-		 */
 		private STATUS status = STATUS.PENDING;
 		
 		/**
@@ -448,20 +452,6 @@ public abstract class Download {
 		 */
 		public void setStatus(STATUS status) {
 			this.status = status;
-		}
-
-		/**
-		 * @return the url
-		 */
-		public URL getUrl() {
-			return url;
-		}
-
-		/**
-		 * @param url the url to set
-		 */
-		public void setUrl(URL url) {
-			this.url = url;
 		}
 
 		/**
@@ -534,10 +524,12 @@ public abstract class Download {
 				Thread.currentThread().setName(threadName+"- Downloading:"+Download.this.ID+"-"+this.id+" - ");
 				System.out.println("\n**** Downloading "+this);
 				try {
-					System.in.read();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					//TODO figure out how to select a URL
+					download(urls[0],new File(chunkFilePath), beginRange, endRange, null);
+				} catch (Exception e) {
 					e.printStackTrace();
+					setStatus(STATUS.FAILED);
+					logger.error(" Unable to download the chunk : "+this,e);
 				}
 				System.out.println("\tDownloaded "+this);
 				

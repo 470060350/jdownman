@@ -161,6 +161,8 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 		download.addListener(listener);
 		//run the download thorugh the splitter 
 		download.split(splitter);
+		//initialize
+		download.initialize();
 		//now that the download information has be collated .. enqueue the download
 		downloadQueue.enqueueDownload(download);
 	}
