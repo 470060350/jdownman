@@ -57,6 +57,9 @@ public class DownloadTest {
 		downloadManager.downloadFile(new File("TEST_FILE6"), urls,PRIORITY.LOW_PRIORITY);
 		downloadManager.downloadFile(new File("TEST_FILE7"), urls,PRIORITY.URGENT);
 		downloadManager.downloadFile(new File("TEST_FILE8"), urls,PRIORITY.LOW_PRIORITY);
+		
+		while(true)
+			Thread.sleep(10000);
 	}
 	
 	
