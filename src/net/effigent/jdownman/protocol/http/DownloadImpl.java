@@ -56,7 +56,12 @@ public class DownloadImpl extends Download {
 
 			try {
 				httpClient.executeMethod(head);
-				Header[] headers = head.getResponseHeaders();
+
+				int statusCode = head.getStatusCode();
+				
+				if(statusCode >= 400 && statusCode <500)
+					throw new DownloadException("The file does not exist in this location : message from server ->  "+statusCode+" "+head.getStatusText());
+				
 				
 //				for(Header header : headers) {
 //					System.out.println(header);
@@ -68,7 +73,7 @@ public class DownloadImpl extends Download {
 			} catch (Exception e) {
 				e.printStackTrace();
 				logger.error("Unable to figure out the length of the file from the URL : "+e.getMessage());
-//				throw new DownloadException("Unable to figure out the length of the file from the URL : "+e.getMessage());
+				throw new DownloadException("Unable to figure out the length of the file from the URL : "+e.getMessage());
 			}
 
 			System.out.println(" File Length at server : "+fileLength);
