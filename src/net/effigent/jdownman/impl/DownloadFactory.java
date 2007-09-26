@@ -44,5 +44,4 @@ public class DownloadFactory {
 		return download;
 	}
 
-
 }
