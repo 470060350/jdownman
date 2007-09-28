@@ -40,7 +40,7 @@ public class MultipleDownloadsTest {
 		//downloadManager.
 		destinationFile = new File("TEST_FILE");
 		urls = new URL[1];
-		urls[0] = new URL("http://localhost/repository/planet/9729/75/ar.mpg"); 
+		urls[0] = new URL("http://vipuls-macbook.local/repository/planet/9729/75/em.pdf.hexdump"); 
 		
 		
 		

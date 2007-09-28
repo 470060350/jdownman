@@ -4,15 +4,15 @@
 package net.effigent.jdownman;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import net.effigent.jdownman.bind.Binder;
 import net.effigent.jdownman.split.Splitter;
 
 import org.apache.log4j.Logger;
@@ -43,7 +43,12 @@ public abstract class Download {
 	/**
 	 * All the pending downloads
 	 */
-	private Queue<ChunkDownload> chunks = new ConcurrentLinkedQueue<ChunkDownload>();
+	private Map<Integer,ChunkDownload> chunks = new TreeMap<Integer,ChunkDownload>();
+	
+	/**
+	 * 
+	 */
+	private AtomicInteger pendingChunkCount = new AtomicInteger(0);
 
 	
 	/**
@@ -150,13 +155,7 @@ public abstract class Download {
 	/**
 	 * 
 	 */
-	public Download() {
-		// TODO Auto-generated constructor stub
-	}
-	
-	
-	
-	
+	Binder binder = null;
 	
 	
 	/**
@@ -165,8 +164,13 @@ public abstract class Download {
 	 * 
 	 * @param url
 	 * @param destination
+	 * @param beginRange
+	 * @param endRange
+	 * @param totalFileSize
+	 * @param monitor
+	 * @throws DownloadException
 	 */
-	protected abstract void download(URL url, File destination, long beginRange, long endRange, DownloadMonitor monitor)  throws DownloadException;
+	protected abstract void download(URL url, File destination, long beginRange, long endRange, long totalFileSize, DownloadMonitor monitor)  throws DownloadException;
 	
 	/**
 	 * 
@@ -183,7 +187,12 @@ public abstract class Download {
 	public void split(Splitter splitter) throws DownloadException {
 		totalFileLength = size();
 		List<ChunkDownload> chunks = splitter.split(this);
-		this.chunks.addAll(chunks);
+//		this.chunks.addAll(chunks);
+		for(ChunkDownload chunk : chunks) {
+			this.chunks.put(chunk.getId(), chunk);
+		}
+		
+		pendingChunkCount.compareAndSet(0, chunks.size());
 	}
 	
 	/**
@@ -212,7 +221,7 @@ public abstract class Download {
 			throw new DownloadException("unable to create Directory "+workDir.getAbsolutePath());
 		}
 		
-		for(ChunkDownload chunk : chunks) {
+		for(ChunkDownload chunk : chunks.values()) {
 			chunk.setChunkFilePath(workDir.getAbsolutePath()+DELIMITER+chunk.getId());
 		}
 
@@ -367,6 +376,18 @@ public abstract class Download {
 		listeners.add(downloadListener);
 	}
 	
+	/**
+	 * 
+	 * @param completedChunk
+	 */
+	private void notifyDownloadCompletion(ChunkDownload downloadedChunk) throws DownloadException{
+//		int completedChunks = completedChunkCount.incrementAndGet();
+		int pending = pendingChunkCount.decrementAndGet();
+		
+		if(pending == 0)
+			binder.bindDownload(this);
+		
+	}
 	
 	/**
 	 * Returns a list of ChunkDownloads for this download
@@ -375,7 +396,7 @@ public abstract class Download {
 	public List<ChunkDownload> getChunks() {
 		
 		List<ChunkDownload> chunkList = new ArrayList<ChunkDownload>();
-		chunkList.addAll(chunks);
+		chunkList.addAll(chunks.values());
 		return chunkList;
 		
 	}
@@ -422,7 +443,6 @@ public abstract class Download {
 		 * 
 		 */
 		private long endRange = -1;
-		
 		
 		// -------------------  GETTERS and SETTERS -------------------   
 		
@@ -500,6 +520,11 @@ public abstract class Download {
 		}
 		
 		/**
+		 * @param endRange the endRange to set
+		 */
+
+		
+		/**
 		 * 
 		 */
 		public String toString() {
@@ -525,7 +550,13 @@ public abstract class Download {
 				System.out.println("\n**** Downloading "+this);
 				try {
 					//TODO figure out how to select a URL
-					download(urls[0],new File(chunkFilePath), beginRange, endRange, null);
+					//TODO check for the chunkFilePath and see if the file exists and has the length endRange-beginRange.
+						//if yes .. then don't download it again
+					
+					download(urls[0],new File(chunkFilePath), beginRange, endRange, totalFileLength,null);
+					
+					notifyDownloadCompletion(this);
+
 				} catch (Exception e) {
 					e.printStackTrace();
 					setStatus(STATUS.FAILED);
@@ -533,14 +564,33 @@ public abstract class Download {
 				}
 				System.out.println("\tDownloaded "+this);
 				
+				
 			}finally {
 				Thread.currentThread().setName(threadName);
 			}
 		}
-		
+
 		// -------------------  GETTERS and SETTERS -------------------   
 	}
 	//#################################	 InnerClass - ChunckDownload #################################	 
+
+
+
+	/**
+	 * @return the binder
+	 */
+	public Binder getBinder() {
+		return binder;
+	}
+
+	/**
+	 * @param binder the binder to set
+	 */
+	public void setBinder(Binder binder) {
+		this.binder = binder;
+	}
+
+
 
 
 }

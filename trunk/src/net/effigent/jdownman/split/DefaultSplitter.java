@@ -50,8 +50,8 @@ public class DefaultSplitter implements Splitter {
 				if(lastChunk)
 					break;
 				
-				beginIndex =  endIndex;
-				endIndex = endIndex+maxChunkSize + 1;
+				beginIndex =  endIndex+1;
+				endIndex = endIndex+maxChunkSize ;
 
 				if(endIndex > size) {
 					endIndex = size-1;

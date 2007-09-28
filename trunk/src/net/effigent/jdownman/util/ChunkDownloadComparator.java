@@ -27,7 +27,7 @@ public class ChunkDownloadComparator implements Comparator<Runnable> {
 	 * 
 	 */
 	public int compare(Runnable r1, Runnable r2) {
-		//not this may throw a ClassCastException .. but what can we do when there are limitations
+		//note this may throw a ClassCastException .. but what can we do when there are limitations
 		//http://forum.java.sun.com/thread.jspa?forumID=534&threadID=749191
 		ChunkDownload o1 = (ChunkDownload)r1;
 		ChunkDownload o2 = (ChunkDownload)r2;
