@@ -12,6 +12,7 @@ import net.effigent.jdownman.Download;
 import net.effigent.jdownman.DownloadException;
 import net.effigent.jdownman.DownloadListener;
 import net.effigent.jdownman.Download.PRIORITY;
+import net.effigent.jdownman.bind.Binder;
 import net.effigent.jdownman.queue.DownloadQueue;
 import net.effigent.jdownman.split.DefaultSplitter;
 import net.effigent.jdownman.split.Splitter;
@@ -69,6 +70,11 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	 * 
 	 */
 	private boolean initialized = false;
+	
+	/**
+	 * 
+	 */
+	private Binder binder = null;
 	
 	/**
 	 * 
@@ -161,6 +167,7 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 		download.addListener(listener);
 		//run the download thorugh the splitter 
 		download.split(splitter);
+		download.setBinder(binder);
 		//initialize
 		download.initialize();
 		//now that the download information has be collated .. enqueue the download
@@ -250,6 +257,28 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	 */
 	public void setWorkManager(DownloadWorkManager workManager) {
 		this.workManager = workManager;
+	}
+
+
+
+
+
+	/**
+	 * @return the binder
+	 */
+	public Binder getBinder() {
+		return binder;
+	}
+
+
+
+
+
+	/**
+	 * @param binder the binder to set
+	 */
+	public void setBinder(Binder binder) {
+		this.binder = binder;
 	}
 	
 	
