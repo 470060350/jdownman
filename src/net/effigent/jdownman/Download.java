@@ -3,7 +3,12 @@
  */
 package net.effigent.jdownman;
 
+import java.io.Externalizable;
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,9 +27,9 @@ import org.apache.log4j.Logger;
  * @author vipul
  *
  */
-public abstract class Download {
-	
-	
+public abstract class Download  implements Serializable{ 
+//implements Externalizable {
+
 	/**
 	 * 
 	 */
@@ -38,7 +43,7 @@ public abstract class Download {
 	/**
 	 * 
 	 */
-	private List<DownloadListener> listeners = new ArrayList<DownloadListener>();
+	private transient List<DownloadListener> listeners = new ArrayList<DownloadListener>();
 
 	/**
 	 * All the pending downloads
@@ -46,61 +51,16 @@ public abstract class Download {
 	private Map<Integer,ChunkDownload> chunks = new TreeMap<Integer,ChunkDownload>();
 	
 	/**
-	 * 
+	 * chunks that are still not complete ... this includes the chunks that are BEING downloaded ... 
+	 * and the ones that are still in the queue
 	 */
 	private AtomicInteger pendingChunkCount = new AtomicInteger(0);
 
-	
 	/**
-	 * 
-	 * @author vipul
-	 *
+	 * chunks that are in progress right now.
 	 */
-	public static enum PRIORITY{
-		LOW_PRIORITY(1),
-		NORMAL(2),
-		HIGH_PRIORITY(3),
-		URGENT(4);
-		
-		/**
-		 * 
-		 */
-		int value = -1;
-		/**
-		 * 
-		 * @param priority
-		 */
-		PRIORITY(int value){
-			this.value = value;
-		}
-		/**
-		 * @return the priority
-		 */
-		public int getValue() {
-			return value;
-		}
-		/**
-		 * @param priority the priority to set
-		 */
-		public void setValue(int priority) {
-			this.value = priority;
-		}
-		
-	}
-	
-	/**
-	 * 
-	 * @author vipul
-	 *
-	 */
-	public static enum STATUS{
-		PENDING,
-		STARTED,
-		COMPLETE,
-		FAILED
-	}
-	
-	
+	private transient AtomicInteger ongoingChunkCount = new AtomicInteger(0);
+
 	/**
 	 * default priority is NORMAL
 	 */
@@ -155,8 +115,24 @@ public abstract class Download {
 	/**
 	 * 
 	 */
-	Binder binder = null;
+	private Date commencementTime = null;
+	/**
+	 * 
+	 */
+	private Date completionTime = null;
 	
+	/**
+	 * 
+	 */
+	private transient Binder binder = null;
+	
+	/**
+	 * 
+	 */
+	public void Download() {
+		listeners = new ArrayList<DownloadListener>();
+		ongoingChunkCount = new AtomicInteger(0);
+	}
 	
 	/**
 	 * This method is declared here to be implemented by protocol
@@ -181,27 +157,37 @@ public abstract class Download {
 	
 	/**
 	 * 
-	 * @param splitter
-	 * @throws DownloadException 
+	 * @return
 	 */
-	public void split(Splitter splitter) throws DownloadException {
-		totalFileLength = size();
-		List<ChunkDownload> chunks = splitter.split(this);
-//		this.chunks.addAll(chunks);
-		for(ChunkDownload chunk : chunks) {
-			this.chunks.put(chunk.getId(), chunk);
-		}
-		
-		pendingChunkCount.compareAndSet(0, chunks.size());
-	}
+	public abstract String getProtocol();
+
 	
 	/**
 	 * 
 	 * @param splitter
+	 * @throws DownloadException 
 	 */
-//	public void bind(Binder binder) {
-//		pendingChuncks.addAll();
-//	}
+	public void split(Splitter splitter) throws DownloadException {
+		//get the sizse of the file
+		totalFileLength = size();
+		//let the splitter split this download
+		List<ChunkDownload> chunks = splitter.split(this);
+		
+		for(ChunkDownload chunk : chunks) {
+			//save all the chunks .. map them against their ids
+			this.chunks.put(chunk.getId(), chunk);
+		}
+		//let all the listeners know that the download has been split
+		for(DownloadListener listener : listeners) 
+		{
+			if(totalFileLength>0) {
+				listener.downloadSizeDetermined(totalFileLength);
+			}
+			listener.downloadSplit(chunks.size(),splitter.getMaxChunkSize());
+		}
+		pendingChunkCount.compareAndSet(0, chunks.size());
+	}
+	
 	
 	/**
 	 * 
@@ -209,6 +195,8 @@ public abstract class Download {
 	 */
 	public void initialize() throws DownloadException{
 		
+		listeners = new ArrayList<DownloadListener>();
+		ongoingChunkCount = new AtomicInteger(0);
 		if(parentWorkDir == null)
 			throw new DownloadException("parentWorkDirectory not set");
 		if(!parentWorkDir.isDirectory())
@@ -217,7 +205,7 @@ public abstract class Download {
 			throw new DownloadException("parentWorkDirectory is not writable");
 
 		workDir = new File(parentWorkDir,"wd"+ID);
-		if(!workDir.mkdir()) {
+		if(!workDir.exists() && !workDir.mkdir()) {
 			throw new DownloadException("unable to create Directory "+workDir.getAbsolutePath());
 		}
 		
@@ -369,25 +357,135 @@ public abstract class Download {
 	}
 	
 	/**
+	 * @return the commencementTime
+	 */
+	public Date getCommencementTime() {
+		return commencementTime;
+	}
+
+	/**
+	 * @return the completionTime
+	 */
+	public Date getCompletionTime() {
+		return completionTime;
+	}
+	/**
 	 * 
 	 * @param downloadListener
 	 */
 	public void addListener(DownloadListener downloadListener) {
-		listeners.add(downloadListener);
+		if(downloadListener != null)
+			listeners.add(downloadListener);
 	}
-	
+
+	/**
+	 * @return the binder
+	 */
+	public Binder getBinder() {
+		return binder;
+	}
+
+	/**
+	 * @param binder the binder to set
+	 */
+	public void setBinder(Binder binder) {
+		this.binder = binder;
+	}
+
+	/**
+	 * @param commencementTime the commencementTime to set
+	 */
+	public void setCommencementTime(Date commencementTime) {
+		this.commencementTime = commencementTime;
+	}
+
+	/**
+	 * @param completionTime the completionTime to set
+	 */
+	public void setCompletionTime(Date completionTime) {
+		this.completionTime = completionTime;
+	}
+
+	/**
+	 * @return the pendingChunkCount
+	 */
+	public AtomicInteger getPendingChunkCount() {
+		return pendingChunkCount;
+	}
+
+	/**
+	 * @param pendingChunkCount the pendingChunkCount to set
+	 */
+	public void resetPendingChunkCount() {
+		pendingChunkCount.set(chunks.size());
+	}
+
+	/**
+	 * 
+	 * @param download
+	 */
+	public void notifyDownloadCommencement(ChunkDownload download) {
+		int ongoing = ongoingChunkCount.incrementAndGet();
+		if(ongoing == 1) {
+			commencementTime = new Date();
+			
+			if (logger.isDebugEnabled())
+				logger.debug("Download "+ID+" started at : "+commencementTime);
+			System.out.println("%%% Download started at : "+commencementTime);
+			
+		}
+		
+		for(DownloadListener listener : listeners) {
+			if(ongoing == 1)
+				listener.downloadStarted();
+
+			listener.chunkDownloadStarted(download.getId());
+		}
+
+		
+	}
+
 	/**
 	 * 
 	 * @param completedChunk
 	 */
-	private void notifyDownloadCompletion(ChunkDownload downloadedChunk) throws DownloadException{
-//		int completedChunks = completedChunkCount.incrementAndGet();
+	private void notifyDownloadCompletion(ChunkDownload chunk) throws DownloadException{
 		int pending = pendingChunkCount.decrementAndGet();
-		
-		if(pending == 0)
+		//no more pending now .... 
+		if(pending == 0) {
 			binder.bindDownload(this);
+		}
+
+		for(DownloadListener listener : listeners) {
+			listener.chunkDownloadComplete(chunk.getId());
+			if(pending == 0) {
+				listener.downloadComplete();
+			}
+
+		}
 		
 	}
+	
+	/**
+	 * 
+	 *
+	 */
+	public void complete() {
+
+		completionTime = new Date();
+		if (logger.isDebugEnabled())
+			logger.debug("Download "+ID+" Completed at : "+completionTime);
+		for(DownloadListener listener : listeners) {
+			listener.downloadComplete();
+		}
+		
+		System.out.println("%%% Download Completed at : "+completionTime);
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Total Time : "+(completionTime.getTime() - commencementTime.getTime()));
+		
+	}
+
+
+
 	
 	/**
 	 * Returns a list of ChunkDownloads for this download
@@ -399,6 +497,28 @@ public abstract class Download {
 		chunkList.addAll(chunks.values());
 		return chunkList;
 		
+	}
+
+	/**
+	 * Returns a list of ChunkDownloads for this download
+	 * @return the chunks
+	 */
+	public void setChunks(List<ChunkDownload> chunkList) {
+		
+		//iterate through all the chunks and add them to the map
+		for(ChunkDownload chunk : chunkList) {
+			chunks.put(chunk.getId(),chunk);
+		}
+		
+	}
+
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public ChunkDownload getChunk(Integer chunkId) {
+		return chunks.get(chunkId);
 	}
 
 	/**
@@ -417,7 +537,7 @@ public abstract class Download {
 	/**
 	 * 
 	 */
-	public class ChunkDownload implements Runnable{
+	public class ChunkDownload implements Runnable,Externalizable{
 
 		/**
 		 * 
@@ -443,6 +563,10 @@ public abstract class Download {
 		 * 
 		 */
 		private long endRange = -1;
+		/**
+		 * 
+		 */
+		private long size = -1;
 		
 		// -------------------  GETTERS and SETTERS -------------------   
 		
@@ -550,10 +674,30 @@ public abstract class Download {
 				System.out.println("\n**** Downloading "+this);
 				try {
 					//TODO figure out how to select a URL
-					//TODO check for the chunkFilePath and see if the file exists and has the length endRange-beginRange.
-						//if yes .. then don't download it again
 					
-					download(urls[0],new File(chunkFilePath), beginRange, endRange, totalFileLength,null);
+					notifyDownloadCommencement(this);
+					
+					File chunkFile = new File(chunkFilePath);
+					boolean downloadFile = true;
+
+					if(chunkFile.exists()) {
+						//if the file already exists ... see if it has the same size as was expected.
+						
+						long chunkFileSize = chunkFile.length();
+						if(chunkFileSize == (endRange - beginRange +1)) {
+							//if the file exists already .. don't download it again.
+							logger.warn(" Chunk "+id+" of download "+ID+ " already exists. Not downloading again");
+							downloadFile = false;
+							
+						}else {
+							chunkFile.delete();
+						}
+						
+						
+					}
+					if(downloadFile)
+						download(urls[0],chunkFile, beginRange, endRange, totalFileLength,null);
+
 					
 					notifyDownloadCompletion(this);
 
@@ -570,6 +714,39 @@ public abstract class Download {
 			}
 		}
 
+		
+		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+			id = in.readInt();
+			status = (STATUS)in.readObject();
+			chunkFilePath = (String)in.readObject();
+			beginRange = in.readLong();
+			endRange = in.readLong();
+			
+		}
+
+		public void writeExternal(ObjectOutput out) throws IOException {
+			out.writeInt(id);
+			out.writeObject(status);
+			out.writeObject(chunkFilePath);
+			out.writeLong(beginRange);
+			out.writeLong(endRange);
+			
+		}
+
+		/**
+		 * @return the size
+		 */
+		public long getSize() {
+			return size;
+		}
+
+		/**
+		 * @param size the size to set
+		 */
+		public void setSize(long size) {
+			this.size = size;
+		}
+
 		// -------------------  GETTERS and SETTERS -------------------   
 	}
 	//#################################	 InnerClass - ChunckDownload #################################	 
@@ -577,20 +754,65 @@ public abstract class Download {
 
 
 	/**
-	 * @return the binder
+	 * 
+	 * @author vipul
+	 *
 	 */
-	public Binder getBinder() {
-		return binder;
+	public static enum PRIORITY{
+		LOW_PRIORITY(1),
+		NORMAL(2),
+		HIGH_PRIORITY(3),
+		URGENT(4);
+		
+		/**
+		 * 
+		 */
+		int value = -1;
+		/**
+		 * 
+		 * @param priority
+		 */
+		PRIORITY(int value){
+			this.value = value;
+		}
+		/**
+		 * @return the priority
+		 */
+		public int getValue() {
+			return value;
+		}
+		/**
+		 * @param priority the priority to set
+		 */
+		public void setValue(int priority) {
+			this.value = priority;
+		}
+		
 	}
-
+	
 	/**
-	 * @param binder the binder to set
+	 * 
+	 * @author vipul
+	 *
 	 */
-	public void setBinder(Binder binder) {
-		this.binder = binder;
+	public static enum STATUS{
+		PENDING,
+		STARTED,
+		COMPLETE,
+		FAILED, 
+		CANCELLED, 
+		INTERRUPTED
 	}
 
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		
+	}
 
+	public void writeExternal(ObjectOutput out) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 }
