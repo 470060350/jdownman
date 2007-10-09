@@ -25,7 +25,10 @@ public class Statements {
     protected String getChunksForDownloadStatement = null;
     protected String insertUrlsStatement = null;
     protected String getUrlsForDownloadStatement = null;
-    
+    protected String deleteDownloadStatement = null;
+    protected String deleteChunksStatement = null;
+    protected String deleteUrlsStatement = null;
+
     /**
      * 
      * @return
@@ -203,4 +206,45 @@ public class Statements {
     	return getUrlsForDownloadStatement;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	public String getDeleteDownloadStatement() {
+		
+    	if(deleteDownloadStatement == null) {
+    		deleteDownloadStatement = " DELETE "+
+    			" FROM "+downloadTableName+
+				" WHERE ID = ? ";
+    	}
+    	return deleteDownloadStatement;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getDeleteChunksStatement() {
+
+		if(deleteChunksStatement == null) {
+    		deleteChunksStatement = " DELETE "+
+    			" FROM "+chunkTableName+
+				" WHERE DOWNLOAD_ID = ? ";
+    	}
+    	return deleteChunksStatement;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getDeleteUrlsStatement() {
+
+		if(deleteUrlsStatement == null) {
+			deleteUrlsStatement = " DELETE "+
+    			" FROM "+downloadUrlsTableName+
+				" WHERE DOWNLOAD_ID = ? ";
+    	}
+    	return deleteUrlsStatement;
+	}
 }

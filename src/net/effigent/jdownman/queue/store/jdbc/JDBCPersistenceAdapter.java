@@ -176,7 +176,7 @@ public class JDBCPersistenceAdapter implements PersistenceAdapter{
 	}
 
 	public void markDownloadComplete(Download download)  throws Exception{
-		getAdapter().updateDownloadStatus(dataSource.getConnection(),download.getID(),Download.STATUS.COMPLETE);		
+		getAdapter().cleanupCompletedDownload(dataSource.getConnection(),download.getID());
 	}
 
 	public void markDownloadInterrupted(Download download)  throws Exception{

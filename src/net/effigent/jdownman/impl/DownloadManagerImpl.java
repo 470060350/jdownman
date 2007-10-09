@@ -44,6 +44,10 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	private File workDir = null;
 	
 
+	/**
+	 * 
+	 */
+	private String DELIMITER = "/";
 	
 	/**
 	 * Splitter that splits downloads into chunks
@@ -165,6 +169,7 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 		download.setParentWorkDir(workDir);
 		download.setDownloadRequestTime(new Date());
 		download.addListener(listener);
+		download.setDELIMITER(DELIMITER);
 		//run the download thorugh the splitter 
 		download.split(splitter);
 		download.setBinder(binder);
@@ -279,6 +284,28 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	 */
 	public void setBinder(Binder binder) {
 		this.binder = binder;
+	}
+
+
+
+
+
+	/**
+	 * @return the dELIMITER
+	 */
+	public String getDELIMITER() {
+		return DELIMITER;
+	}
+
+
+
+
+
+	/**
+	 * @param delimiter the dELIMITER to set
+	 */
+	public void setDELIMITER(String delimiter) {
+		DELIMITER = delimiter;
 	}
 	
 	
