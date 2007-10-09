@@ -35,7 +35,17 @@ public class DownloadImpl extends Download {
 	 */
 	private static final Logger logger = Logger.getLogger(DownloadImpl.class);
 	
-	@Override
+	/**
+	 * 
+	 */
+	public String getProtocol() {
+		return "http";
+	}
+
+	
+	/**
+	 * 
+	 */
 	protected void download(URL url, File destination, long beginRange, long endRange, long totalFileSize,DownloadMonitor monitor) throws DownloadException{
 		
 		System.out.println(" DOWNLOAD REQUEST RECEIVED "+url.toString()+" \n\tbeginRange : "+beginRange+" - EndRange "+endRange+" \n\t to -> "+destination.getAbsolutePath());
@@ -124,5 +134,6 @@ public class DownloadImpl extends Download {
 		
 		return fileLength;
 	}
+
 
 }

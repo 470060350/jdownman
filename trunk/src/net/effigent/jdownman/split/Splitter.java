@@ -15,10 +15,17 @@ import net.effigent.jdownman.Download.ChunkDownload;
 public interface Splitter {
 
 	/**
+	 * This method accepts a download object and populates it 
+	 * with the downloadable chunks ... 
 	 * 
 	 * @param download
 	 * @return
 	 */
 	List<ChunkDownload> split(Download download);
+
+	/**
+	 * @return the maxChunkSize
+	 */
+	public long getMaxChunkSize() ;
 
 }

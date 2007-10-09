@@ -9,7 +9,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import net.effigent.jdownman.Download.ChunkDownload;
 import net.effigent.jdownman.util.ChunkDownloadComparator;
 import net.effigent.jdownman.util.DownloadNamedThreadFactory;
 

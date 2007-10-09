@@ -27,7 +27,7 @@ public class DownloadFactory {
 	 * @return
 	 * @throws DownloadException 
 	 */
-	Download createDownload(String protocol) throws DownloadException {
+	public Download createDownload(String protocol) throws DownloadException {
 		Download  download = null;
 		String packageName = PARENT_PACKAGE.concat(protocol.toLowerCase());
 		String downloadClassFQN = packageName.concat(".").concat(DOWNLOAD_IMPL);

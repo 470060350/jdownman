@@ -28,7 +28,8 @@ public class SimpleBinder implements Binder {
 	 * 
 	 */
 	public void bindDownload(Download download) throws BindingException {
-		//get all the chunks ... they are already sorted wrt their ids
+		//get all the chunks ... it is assumed that they are already sorted wrt their ids
+		// 
 		List<ChunkDownload> chunks = download.getChunks();
 		
 		//get the destinationFile 
@@ -47,7 +48,7 @@ public class SimpleBinder implements Binder {
 					ins = FileUtils.openInputStream(chunkFile);
 					
 					IOUtils.copy(ins, fos);
-					
+					//delete the chunk after the data has been moved to the actual file.
 					chunkFile.delete();
 					
 					
@@ -60,9 +61,10 @@ public class SimpleBinder implements Binder {
 				}
 				
 			}
-			
+			//delete the work directory.
 			download.getWorkDir().delete();
-			
+			// now the download is complete.
+			download.complete();
 		} catch (IOException e) {
 			logger.error("IO Exception while copying the chunk "+e.getMessage(),e);
 			e.printStackTrace();

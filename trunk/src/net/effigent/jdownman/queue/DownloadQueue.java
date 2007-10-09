@@ -6,6 +6,7 @@ package net.effigent.jdownman.queue;
 
 import net.effigent.jdownman.Download;
 import net.effigent.jdownman.DownloadException;
+import net.effigent.jdownman.util.InitializationException;
 
 /**
  * This interface declares the operations 
@@ -22,10 +23,11 @@ import net.effigent.jdownman.DownloadException;
 public interface DownloadQueue {
 	
 	/**
+	 * @throws InitializationException 
 	 * 
 	 *
 	 */
-	public void init();
+	public void initialize() throws InitializationException;
 	
 	/**
 	 * 
