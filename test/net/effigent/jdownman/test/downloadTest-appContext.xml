@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+       <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+            <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+            <property name="url" value="jdbc:oracle:thin:@miami.zoasis.com:1521:synct"/>
+            <property name="defaultAutoCommit" value="false"/>
+            <property name="accessToUnderlyingConnectionAllowed" value="true"/>
+            <property name="username" value="corp4"/>
+            <property name="password" value="corp4"/>
+       </bean>
+       
+       
+</beans>
