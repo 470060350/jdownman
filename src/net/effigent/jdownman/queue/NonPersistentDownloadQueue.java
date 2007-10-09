@@ -3,7 +3,6 @@
  */
 package net.effigent.jdownman.queue;
 
-import java.util.Comparator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
@@ -32,7 +31,7 @@ public class NonPersistentDownloadQueue implements DownloadQueue {
 
 	
 
-	public void init() {
+	public void initialize() {
 		// don't have much to initialize in this version
 		
 	}
@@ -50,7 +49,8 @@ public class NonPersistentDownloadQueue implements DownloadQueue {
 	}
 
 	/**
-	 * 
+	 * Enqueue a download. This call would be made after the splitter has done its job
+	 * and the download request is ready to be acted upon.
 	 */
 	public void enqueueDownload(Download download) throws DownloadException {
 		try {
@@ -64,6 +64,7 @@ public class NonPersistentDownloadQueue implements DownloadQueue {
 	}
 
  
+	
 
 
 }
