@@ -6,7 +6,6 @@ package net.effigent.jdownman.queue;
 import net.effigent.jdownman.Download;
 import net.effigent.jdownman.DownloadException;
 import net.effigent.jdownman.DownloadListener;
-import net.effigent.jdownman.DownloadMonitor;
 import net.effigent.jdownman.queue.store.PersistenceAdapter;
 
 /**
@@ -22,7 +21,7 @@ class ListenerForPersistence implements DownloadListener {
 	/**
 	 * 
 	 */
-	private PersistenceAdapter persister = null;
+	private PersistenceAdapter persistenceAdapter = null;
 
 	/**
 	 * @param download 
@@ -31,7 +30,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public ListenerForPersistence(Download download, PersistenceAdapter persister) {
 		this.download = download;
-		this.persister = persister;
+		this.persistenceAdapter = persister;
 	}
 
 	/* (non-Javadoc)
@@ -39,7 +38,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void chunkDownloadComplete(int id) {
 		try {
-			persister.markChunkDownloadComplete(download.getChunk(id));
+			persistenceAdapter.markChunkDownloadComplete(download.getChunk(id));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -51,7 +50,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void chunkDownloadStarted(int id) {
 		try {
-			persister.markChunkDownloadStarted(download.getChunk(id));
+			persistenceAdapter.markChunkDownloadStarted(download.getChunk(id));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -63,7 +62,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void downloadCancelled() {
 		try {
-			persister.markDownloadCancelled(download);
+			persistenceAdapter.markDownloadCancelled(download);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -75,7 +74,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void downloadComplete() {
 		try {
-			persister.markDownloadComplete(download);
+			persistenceAdapter.markDownloadComplete(download);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,7 +86,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void downloadInterrupted() {
 		try {
-			persister.markDownloadInterrupted(download);
+			persistenceAdapter.markDownloadInterrupted(download);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -99,7 +98,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void downloadPaused() {
 		try {
-			persister.markDownloadInterrupted(download);
+			persistenceAdapter.markDownloadInterrupted(download);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -111,7 +110,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void downloadSizeDetermined(long totalFileLength) {
 		try {
-			persister.saveDownloadSize(download,totalFileLength);
+			persistenceAdapter.saveDownloadSize(download,totalFileLength);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -124,7 +123,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void downloadSplit(int chunkCount, long chunkSize) {
 		try {
-			persister.markDownloadSplit(download,chunkCount,chunkSize);
+			persistenceAdapter.markDownloadSplit(download,chunkCount,chunkSize);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -137,7 +136,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void downloadStarted() {
 		try {
-			persister.markDownloadStarted(download);
+			persistenceAdapter.markDownloadStarted(download);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -149,7 +148,7 @@ class ListenerForPersistence implements DownloadListener {
 	 */
 	public void setException(DownloadException e) {
 		try {
-			persister.registerExceptionForDownload(download,e);
+			persistenceAdapter.registerExceptionForDownload(download,e);
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

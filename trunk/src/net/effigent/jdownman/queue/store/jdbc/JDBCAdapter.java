@@ -83,6 +83,13 @@ public interface JDBCAdapter {
      * @return
      */
 	public List<Download> getPendingDownloads(Connection connection) throws SQLException;
+	
+	/**
+	 * 
+	 * @param connection
+	 * @param id
+	 */
+	public void cleanupCompletedDownload(Connection connection, String id) throws SQLException;
 
 	
 }

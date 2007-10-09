@@ -38,7 +38,7 @@ public abstract class Download  implements Serializable{
 	/**
 	 * 
 	 */
-	private static final String DELIMITER = "/";
+	private String DELIMITER = "/";
 	
 	/**
 	 * 
@@ -146,7 +146,7 @@ public abstract class Download  implements Serializable{
 	 * @param monitor
 	 * @throws DownloadException
 	 */
-	protected abstract void download(URL url, File destination, long beginRange, long endRange, long totalFileSize, DownloadMonitor monitor)  throws DownloadException;
+	protected abstract void download(URL url, File destination, long beginRange, long endRange, long totalFileSize)  throws DownloadException;
 	
 	/**
 	 * 
@@ -163,6 +163,8 @@ public abstract class Download  implements Serializable{
 
 	
 	/**
+	 * The visitor -Splitter in this case - works upon the current download and splits it
+	 * generating multiple chunks.
 	 * 
 	 * @param splitter
 	 * @throws DownloadException 
@@ -185,30 +187,33 @@ public abstract class Download  implements Serializable{
 			}
 			listener.downloadSplit(chunks.size(),splitter.getMaxChunkSize());
 		}
+		//set the pending chunk count .. since all of them are pending 
 		pendingChunkCount.compareAndSet(0, chunks.size());
 	}
 	
 	
 	/**
-	 * 
+	 * Initialize the download .... 
 	 *
 	 */
 	public void initialize() throws DownloadException{
-		
+		//create a new array for listeners
 		listeners = new ArrayList<DownloadListener>();
+		// set the ongoing chunk count to 0
 		ongoingChunkCount = new AtomicInteger(0);
+		//check for the parentWorkDir's integrity 
 		if(parentWorkDir == null)
 			throw new DownloadException("parentWorkDirectory not set");
 		if(!parentWorkDir.isDirectory())
 			throw new DownloadException("parentWorkDirectory "+parentWorkDir.getAbsolutePath()+" is not a directory");
 		if(!parentWorkDir.canWrite())
 			throw new DownloadException("parentWorkDirectory is not writable");
-
+		//create (or verify) the work directory for this downlpad
 		workDir = new File(parentWorkDir,"wd"+ID);
 		if(!workDir.exists() && !workDir.mkdir()) {
 			throw new DownloadException("unable to create Directory "+workDir.getAbsolutePath());
 		}
-		
+		//set the file path for each chunk ... 
 		for(ChunkDownload chunk : chunks.values()) {
 			chunk.setChunkFilePath(workDir.getAbsolutePath()+DELIMITER+chunk.getId());
 		}
@@ -438,7 +443,6 @@ public abstract class Download  implements Serializable{
 		for(DownloadListener listener : listeners) {
 			if(ongoing == 1)
 				listener.downloadStarted();
-
 			listener.chunkDownloadStarted(download.getId());
 		}
 
@@ -450,9 +454,11 @@ public abstract class Download  implements Serializable{
 	 * @param completedChunk
 	 */
 	private void notifyDownloadCompletion(ChunkDownload chunk) throws DownloadException{
+		//decrement the pending count and get it  
 		int pending = pendingChunkCount.decrementAndGet();
-		//no more pending now .... 
+
 		if(pending == 0) {
+			//no more pending now .... 			
 			binder.bindDownload(this);
 		}
 
@@ -461,7 +467,6 @@ public abstract class Download  implements Serializable{
 			if(pending == 0) {
 				listener.downloadComplete();
 			}
-
 		}
 		
 	}
@@ -679,13 +684,13 @@ public abstract class Download  implements Serializable{
 					
 					File chunkFile = new File(chunkFilePath);
 					boolean downloadFile = true;
-
+					
 					if(chunkFile.exists()) {
 						//if the file already exists ... see if it has the same size as was expected.
 						
 						long chunkFileSize = chunkFile.length();
 						if(chunkFileSize == (endRange - beginRange +1)) {
-							//if the file exists already .. don't download it again.
+							//if the file exists already .. don't download it again.(by setting the downloadFile flag as false)
 							logger.warn(" Chunk "+id+" of download "+ID+ " already exists. Not downloading again");
 							downloadFile = false;
 							
@@ -693,12 +698,15 @@ public abstract class Download  implements Serializable{
 							chunkFile.delete();
 						}
 						
-						
 					}
-					if(downloadFile)
-						download(urls[0],chunkFile, beginRange, endRange, totalFileLength,null);
 
-					
+					/**
+					 * if download is needed .... 
+					 */
+					if(downloadFile) {
+						download(urls[0],chunkFile, beginRange, endRange, totalFileLength);
+					}
+
 					notifyDownloadCompletion(this);
 
 				} catch (Exception e) {
@@ -714,7 +722,9 @@ public abstract class Download  implements Serializable{
 			}
 		}
 
-		
+		/**
+		 * 
+		 */
 		public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 			id = in.readInt();
 			status = (STATUS)in.readObject();
@@ -724,6 +734,9 @@ public abstract class Download  implements Serializable{
 			
 		}
 
+		/**
+		 * 
+		 */
 		public void writeExternal(ObjectOutput out) throws IOException {
 			out.writeInt(id);
 			out.writeObject(status);
@@ -812,6 +825,20 @@ public abstract class Download  implements Serializable{
 	public void writeExternal(ObjectOutput out) throws IOException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	/**
+	 * @return the dELIMITER
+	 */
+	public String getDELIMITER() {
+		return DELIMITER;
+	}
+
+	/**
+	 * @param delimiter the dELIMITER to set
+	 */
+	public void setDELIMITER(String delimiter) {
+		DELIMITER = delimiter;
 	}
 
 

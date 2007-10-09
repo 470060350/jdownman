@@ -5,15 +5,12 @@ package net.effigent.jdownman.protocol.http;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.GregorianCalendar;
 
 import net.effigent.jdownman.Download;
 import net.effigent.jdownman.DownloadException;
-import net.effigent.jdownman.DownloadMonitor;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -46,7 +43,7 @@ public class DownloadImpl extends Download {
 	/**
 	 * 
 	 */
-	protected void download(URL url, File destination, long beginRange, long endRange, long totalFileSize,DownloadMonitor monitor) throws DownloadException{
+	protected void download(URL url, File destination, long beginRange, long endRange, long totalFileSize) throws DownloadException{
 		
 		System.out.println(" DOWNLOAD REQUEST RECEIVED "+url.toString()+" \n\tbeginRange : "+beginRange+" - EndRange "+endRange+" \n\t to -> "+destination.getAbsolutePath());
 
@@ -58,30 +55,25 @@ public class DownloadImpl extends Download {
 
 			GetMethod get = new GetMethod(url.toString());
 			HttpClient httpClient = new HttpClient();
-			
+			//set the range header
 			Header rangeHeader = new Header();
 			rangeHeader.setName("Range");
 			rangeHeader.setValue("bytes="+beginRange+"-"+endRange);
 
 			get.setRequestHeader(rangeHeader);
 			
-//			Header ifRangeHeader = new Header();
-//			ifRangeHeader.setName("If-Range");
-//			ifRangeHeader.setValue(((GregorianCalendar) GregorianCalendar.getInstance()).getGregorianChange().toString());
-//			get.setRequestHeader(ifRangeHeader);
-
-			
+			//execute the get method
 			httpClient.executeMethod(get);
 
 			int statusCode = get.getStatusCode();
-			
+			//if status code is in between 400 & 500 .... throw exception
 			if(statusCode >= 400 && statusCode < 500)
 				throw new DownloadException("The file does not exist in this location : message from server ->  "+statusCode+" "+get.getStatusText());
-
+			//get the response body as stream 
 			InputStream input= get.getResponseBodyAsStream();
-			
+			//get the output stream for the file 
 			OutputStream output= new FileOutputStream(destination);
-			
+			//download file
 			int length = IOUtils.copy(input, output);
 			
 			System.out.println(" Length : "+length);
@@ -115,10 +107,6 @@ public class DownloadImpl extends Download {
 				if(statusCode >= 400 && statusCode <500)
 					throw new DownloadException("The file does not exist in this location : message from server ->  "+statusCode+" "+head.getStatusText());
 				
-				
-//				for(Header header : headers) {
-//					System.out.println(header);
-//				}
 				
 				Header header = head.getResponseHeader("Content-Length");
 				Object contentLength = header.getValue();

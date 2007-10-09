@@ -102,6 +102,8 @@ public class DefaultJDBCAdapter implements JDBCAdapter {
 	 * @throws SQLException 
 	 */
 	private void persistDownloadUrls(Connection connection, String id, URL url) throws SQLException {
+		if(url == null)
+			return;
 		QueryRunner qr = new QueryRunner();
 		Object[] params  = new Object[2];
 		params[0] = id;
@@ -256,6 +258,28 @@ public class DefaultJDBCAdapter implements JDBCAdapter {
 		
 		
 		return downloads;
+	}
+
+	/**
+	 * 
+	 * @param connection
+	 * @param id
+	 */
+	public void cleanupCompletedDownload(Connection connection, String id)  throws SQLException{
+		QueryRunner qr = new QueryRunner();
+		Object[] params  = new Object[1];
+		params [0] = id;//download ID
+
+		boolean autoCommit = connection.getAutoCommit();
+		connection.setAutoCommit(false);
+		try {
+			qr.update(connection, statements.getDeleteDownloadStatement(), params);
+			qr.update(connection, statements.getDeleteChunksStatement(), params);
+			qr.update(connection, statements.getDeleteUrlsStatement(), params);
+		}finally {
+			connection.setAutoCommit(autoCommit);
+			connection.close();
+		}
 	}
 
 	
