@@ -37,22 +37,22 @@ public interface DownloadManager {
 	 * 
 	 * @param destinationFile
 	 * @param urls
-	 * @param md5
+	 * @param checksum
 	 * @param length
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,Object md5, long length) throws DownloadException;
+	public void downloadFile(File destinationFile,URL[] urls,Object checksum, long length) throws DownloadException;
 
 	/**
 	 * 
 	 * @param destinationFile
 	 * @param urls
 	 * @param listener
-	 * @param md5
+	 * @param checksum
 	 * @param length
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,DownloadListener listener, Object md5, long length,PRIORITY priority) throws DownloadException;
+	public void downloadFile(File destinationFile,URL[] urls,DownloadListener listener, Object checksum, long length,PRIORITY priority) throws DownloadException;
 
 
 }

@@ -42,6 +42,11 @@ public class DownloadWorkManager implements WorkManager {
 	/**
 	 * 
 	 */
+	public DownloadWorkManager() {	}
+
+	/**
+	 * 
+	 */
 	public DownloadWorkManager(ThreadingProfile threadingProfile) {
 		this.threadingProfile = threadingProfile;
 	}

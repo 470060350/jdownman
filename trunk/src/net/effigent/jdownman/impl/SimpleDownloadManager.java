@@ -33,10 +33,10 @@ public class SimpleDownloadManager extends AbstractDownloadManager implements Do
 	 * - entertains only HTTP URLs
 	 * - downloads file only in one single thread
 	 * - downloads once, no failure recovery or anything
-	 * - no md5 check
+	 * - no checksum check
 	 */
 	public void downloadFile(File destinationFile, URL[] urls,
-			DownloadListener listener, Object md5,long length,PRIORITY priority) throws DownloadException{
+			DownloadListener listener, Object checksum,long length,PRIORITY priority) throws DownloadException{
 		
 		URL url = urls[0];
 		if(!url.getProtocol().equalsIgnoreCase("http")) {

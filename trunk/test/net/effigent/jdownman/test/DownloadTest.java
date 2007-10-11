@@ -4,8 +4,6 @@ package net.effigent.jdownman.test;
 import java.io.File;
 import java.net.URL;
 
-import javax.sql.DataSource;
-
 import net.effigent.jdownman.DownloadManager;
 import net.effigent.jdownman.Download.PRIORITY;
 import net.effigent.jdownman.bind.Binder;
@@ -23,9 +21,16 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
 public class DownloadTest {
+	
+	public static void main(String[] args) throws Exception {
+		DownloadTest test = new DownloadTest();
+		test.setUp();
+		test.download();
+	}
 
 	DownloadManager downloadManager= null;
 	URL[] urls = null;
@@ -33,59 +38,20 @@ public class DownloadTest {
 	@Before
 	public void setUp() throws Exception {
 
+		ClassPathXmlApplicationContext appContext= new ClassPathXmlApplicationContext("downloadTest-appContext.xml"); 
+		
+		
 		System.setOut(new ThreadNamePrepender(System.out));
 
-		DownloadManagerImpl dmi = new DownloadManagerImpl();
-		dmi.setWorkDirPath("../test/BASE_FOLDER");
-		dmi.setUidGenerator(new TimestampBasedUIDGenerator());
-//		dmi.setDownloadQueue(new NonPersistentDownloadQueue());
+		downloadManager = (DownloadManager)appContext.getBean("downloadManager");
 		
-		
-		Binder binder = new SimpleBinder();
-		
-		PersistentQueue queue = new PersistentQueue();
-		queue.setBinder(binder);
-
-//		queue.setPersistenceAdapter(new FileBasedPersister(new File("../test/jdm_persistence")));
-		
-		BasicDataSource dataSource = new BasicDataSource();
-		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-		dataSource.setUrl("jdbc:mysql://localhost/jdm");
-		dataSource.setUsername("jdm");
-		dataSource.setPassword("jdm");
-		
-		
-		JDBCPersistenceAdapter persistenceAdapter = new JDBCPersistenceAdapter(dataSource);
-		persistenceAdapter.setBinder(binder);
-	
-		queue.setPersistenceAdapter(persistenceAdapter);
-		
-		dmi.setDownloadQueue(queue);
-		queue.initialize();
-
-		dmi.setBinder(binder);
-		
-		
-		ThreadingProfile threadingProfile = new ThreadingProfile();
-		threadingProfile.setMaxThreadsActive(100);
-		threadingProfile.setMaxThreadsIdle(26);
-		
-		DownloadWorkManager workManager = new DownloadWorkManager(threadingProfile);
-		dmi.setWorkManager(workManager);
-		
-		DefaultSplitter splitter = new DefaultSplitter();
-		splitter.setMaxChunkSize(1000000l);
-		dmi.setSplitter(splitter);
-		
-		dmi.initialize();
-		downloadManager = dmi;
-		//downloadManager.
 		urls = new URL[1];
 //		urls[0] = new URL("http://vipuls-macbook.local/repository/planet/9729/75/em.pdf.hexdump"); 
 //		urls[0] = new URL("http://download.gigahost123.com/songs/Audio/indian/movies/bombay/Theme%20Music.mp3"); 
 //		urls[0] = new URL("http://localhost:8888/songs/Audio/indian/movies/bombay/Theme%20Music.mp3"); 
-//		urls[0] = new URL("http://localhost/repository/planet/9729/75/vipul.jpg"); 
-		urls[0] = new URL("http://localhost/repository/planet/9729/75/Federer.mpg"); 
+		urls[0] = new URL("http://download.gigahost123.com/songs/Audio/indian/movies/Om%20Shanti%20Om%20(2007)/02%20-%20Dard-E-Disco%20-%20Sukhwinder%20Singh,%20Marianne,%20Nisha%20&%20Caralisa%20@%20Fmw11.com.mp3"); 
+//		urls[0] = new URL("http://localhost/repository/planet/9729/75/Federer.mpg"); 
+//		urls[1] = new URL("http://localhost/repository/satellite/9729/75/Federer111.mpg"); 
 			
 		
 	}
@@ -93,16 +59,25 @@ public class DownloadTest {
 	
 	@Test
 	public void download() throws Exception{
-		downloadManager.downloadFile(new File("TEST_FILE0_N.mpg"), urls,PRIORITY.NORMAL);
-		downloadManager.downloadFile(new File("TEST_FILE1_U.mpg"), urls,PRIORITY.URGENT);
-		downloadManager.downloadFile(new File("TEST_FILE2_H.mpg"), urls,PRIORITY.HIGH_PRIORITY);
-		downloadManager.downloadFile(new File("TEST_FILE3_L.mpg"), urls,PRIORITY.LOW_PRIORITY);
-		downloadManager.downloadFile(new File("TEST_FILE4_L.mpg"), urls,PRIORITY.LOW_PRIORITY);
-		downloadManager.downloadFile(new File("TEST_FILE5_H.mpg"), urls,PRIORITY.HIGH_PRIORITY);
-		downloadManager.downloadFile(new File("TEST_FILE6_L.mpg"), urls,PRIORITY.LOW_PRIORITY);
-		downloadManager.downloadFile(new File("TEST_FILE7_U.mpg"), urls,PRIORITY.URGENT);
-		downloadManager.downloadFile(new File("TEST_FILE8_L.mpg"), urls,PRIORITY.LOW_PRIORITY);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE0_N.mpg"), urls,PRIORITY.NORMAL);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE1_U.mpg"), urls,PRIORITY.URGENT);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE2_H.mpg"), urls,PRIORITY.HIGH_PRIORITY);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE3_L.mpg"), urls,PRIORITY.LOW_PRIORITY);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE4_L.mpg"), urls,PRIORITY.LOW_PRIORITY);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE5_H.mpg"), urls,PRIORITY.HIGH_PRIORITY);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE6_L.mpg"), urls,PRIORITY.LOW_PRIORITY);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE7_U.mpg"), urls,PRIORITY.URGENT);
+//		downloadManager.downloadFile(new File("OUTPUT/TEST_FILE8_L.mpg"), urls,PRIORITY.LOW_PRIORITY);
 		
+		downloadManager.downloadFile(new File("OUTPUT/Song0_N.mp3"), urls,PRIORITY.NORMAL);
+		downloadManager.downloadFile(new File("OUTPUT/Song1_U.mp3"), urls,PRIORITY.URGENT);
+		downloadManager.downloadFile(new File("OUTPUT/Song2_H.mp3"), urls,PRIORITY.HIGH_PRIORITY);
+		downloadManager.downloadFile(new File("OUTPUT/Song3_L.mp3"), urls,PRIORITY.LOW_PRIORITY);
+		downloadManager.downloadFile(new File("OUTPUT/Song4_L.mp3"), urls,PRIORITY.LOW_PRIORITY);
+		downloadManager.downloadFile(new File("OUTPUT/Song5_H.mp3"), urls,PRIORITY.HIGH_PRIORITY);
+		downloadManager.downloadFile(new File("OUTPUT/Song6_L.mp3"), urls,PRIORITY.LOW_PRIORITY);
+		downloadManager.downloadFile(new File("OUTPUT/Song7_U.mp3"), urls,PRIORITY.URGENT);
+		downloadManager.downloadFile(new File("OUTPUT/Song8_L.mp3"), urls,PRIORITY.LOW_PRIORITY);
 		System.in.read();
 		while(true)
 			Thread.sleep(10000);

@@ -45,13 +45,13 @@ public abstract class AbstractDownloadManager implements DownloadManager {
 	 * 
 	 * @param destinationFile
 	 * @param urls
-	 * @param md5
+	 * @param checksum
 	 * @param length
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile, URL[] urls, Object md5,
+	public void downloadFile(File destinationFile, URL[] urls, Object checksum,
 			long length) throws DownloadException {
-		downloadFile(destinationFile,urls,null,md5,length,PRIORITY.NORMAL);
+		downloadFile(destinationFile,urls,null,checksum,length,PRIORITY.NORMAL);
 	}
 
 
