@@ -104,7 +104,7 @@ public abstract class Download  implements Serializable{
 	/**
 	 * 
 	 */
-	private Object expectedMD5 = null;
+	private String expectedChecksum = null;
 	
 	
 	/**
@@ -125,7 +125,13 @@ public abstract class Download  implements Serializable{
 	 * 
 	 */
 	private transient Binder binder = null;
-	
+
+	/**
+	 * 
+	 */
+	boolean discardPartialChunks = false;
+
+
 	/**
 	 * 
 	 */
@@ -146,7 +152,7 @@ public abstract class Download  implements Serializable{
 	 * @param monitor
 	 * @throws DownloadException
 	 */
-	protected abstract void download(URL url, File destination, long beginRange, long endRange, long totalFileSize)  throws DownloadException;
+	protected abstract void download(URL url, File destination, long beginRange, long endRange, long totalFileSize,boolean appendToFile)  throws DownloadException;
 	
 	/**
 	 * 
@@ -190,7 +196,6 @@ public abstract class Download  implements Serializable{
 		//set the pending chunk count .. since all of them are pending 
 		pendingChunkCount.compareAndSet(0, chunks.size());
 	}
-	
 	
 	/**
 	 * Initialize the download .... 
@@ -251,17 +256,17 @@ public abstract class Download  implements Serializable{
 	}
 
 	/**
-	 * @return the expectedMD5Value
+	 * @return the expectedChecksum
 	 */
-	public Object getExpectedMD5() {
-		return expectedMD5;
+	public Object getExpectedChecksum() {
+		return expectedChecksum;
 	}
 
 	/**
-	 * @param expectedMD5Value the expectedMD5Value to set
+	 * @param expectedChecksum 
 	 */
-	public void setExpectedMD5(Object expectedMD5) {
-		this.expectedMD5 = expectedMD5;
+	public void setExpectedChecksum(String expectedChecksum) {
+		this.expectedChecksum = expectedChecksum;
 	}
 
 	/**
@@ -411,6 +416,19 @@ public abstract class Download  implements Serializable{
 		this.completionTime = completionTime;
 	}
 
+	/**
+	 * @return the discardPartialChunks
+	 */
+	public boolean isDiscardPartialChunks() {
+		return discardPartialChunks;
+	}
+
+	/**
+	 * @param discardPartialChunks the discardPartialChunks to set
+	 */
+	public void setDiscardPartialChunks(boolean discardPartialChunks) {
+		this.discardPartialChunks = discardPartialChunks;
+	}
 	/**
 	 * @return the pendingChunkCount
 	 */
@@ -682,8 +700,10 @@ public abstract class Download  implements Serializable{
 					
 					notifyDownloadCommencement(this);
 					
+					
 					File chunkFile = new File(chunkFilePath);
 					boolean downloadFile = true;
+					boolean appendToFile = false;
 					
 					if(chunkFile.exists()) {
 						//if the file already exists ... see if it has the same size as was expected.
@@ -694,7 +714,10 @@ public abstract class Download  implements Serializable{
 							logger.warn(" Chunk "+id+" of download "+ID+ " already exists. Not downloading again");
 							downloadFile = false;
 							
-						}else {
+						}else if(!discardPartialChunks){
+							beginRange= beginRange+chunkFileSize;
+							appendToFile = true;
+						}else{
 							chunkFile.delete();
 						}
 						
@@ -704,7 +727,7 @@ public abstract class Download  implements Serializable{
 					 * if download is needed .... 
 					 */
 					if(downloadFile) {
-						download(urls[0],chunkFile, beginRange, endRange, totalFileLength);
+						download(urls[0],chunkFile, beginRange, endRange, totalFileLength,appendToFile);
 					}
 
 					notifyDownloadCompletion(this);
@@ -840,6 +863,5 @@ public abstract class Download  implements Serializable{
 	public void setDELIMITER(String delimiter) {
 		DELIMITER = delimiter;
 	}
-
 
 }

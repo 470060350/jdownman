@@ -61,7 +61,7 @@ public class DefaultJDBCAdapter implements JDBCAdapter {
 		params[0] = download.getID(); //ID
 		params[1] = download.getPriority().name(); //PRIORITY
 		params[2] = download.getStatus().name(); //STATUS
-		params[3] = download.getExpectedMD5(); //MD5
+		params[3] = download.getExpectedChecksum(); //CHECKSUM
 		params[4] = download.getWorkDir().getAbsolutePath(); //WORK_DIR
 		params[5] = download.getFile().getAbsolutePath(); //TARGET_FILE
 		params[6] = download.getTotalFileLength(); //SIZE
@@ -314,7 +314,7 @@ public class DefaultJDBCAdapter implements JDBCAdapter {
 				String id = resultSet.getString("ID");
 				String priority= resultSet.getString("PRIORITY");
 				String status = resultSet.getString("STATUS");
-				String md5 = resultSet.getString("MD5");
+				String checksum = resultSet.getString("CHECKSUM");
 				String workDir = resultSet.getString("WORK_DIR");
 				String targetFile = resultSet.getString("TARGET_FILE");
 				long size = resultSet.getLong("SIZE");
@@ -326,7 +326,7 @@ public class DefaultJDBCAdapter implements JDBCAdapter {
 				download.setID(id);
 				download.setPriority(Download.PRIORITY.valueOf(priority));
 				download.setStatus(Download.STATUS.valueOf(status));
-				download.setExpectedMD5(md5);
+				download.setExpectedChecksum(checksum);
 				download.setWorkDir(new File(workDir));
 				download.setFile(new File(targetFile));
 				download.setTotalFileLength(size);

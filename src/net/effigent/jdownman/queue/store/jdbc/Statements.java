@@ -39,7 +39,7 @@ public class Statements {
     				"ID," +
     				"PRIORITY," +
     				"STATUS," +
-    				"MD5," +
+    				"CHECKSUM," +
     				"WORK_DIR," +
     				"TARGET_FILE," +
     				"SIZE," +
@@ -141,7 +141,7 @@ public class Statements {
 				"ID," +
 				"PRIORITY," +
 				"STATUS," +
-				"MD5," +
+				"CHECKSUM," +
 				"WORK_DIR," +
 				"TARGET_FILE," +
 				"SIZE," +

@@ -4,7 +4,7 @@ create 	table JDM_DOWNLOAD(
 	ID varchar(255) not null primary key, 
 	PRIORITY varchar(255) not null, 
 	STATUS varchar(255) not null, 
-	MD5 varchar(255) , 
+	CHECKSUM varchar(255) , 
 	WORK_DIR varchar(255) not null, 
 	TARGET_FILE varchar(255) not null, 
 	SIZE numeric(20, 0) ,

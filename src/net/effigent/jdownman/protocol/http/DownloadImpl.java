@@ -43,15 +43,16 @@ public class DownloadImpl extends Download {
 	/**
 	 * 
 	 */
-	protected void download(URL url, File destination, long beginRange, long endRange, long totalFileSize) throws DownloadException{
+	protected void download(URL url, File destination, long beginRange, long endRange, long totalFileSize,boolean appendToFile) throws DownloadException{
 		
 		System.out.println(" DOWNLOAD REQUEST RECEIVED "+url.toString()+" \n\tbeginRange : "+beginRange+" - EndRange "+endRange+" \n\t to -> "+destination.getAbsolutePath());
 
 		try {
-			if(destination.exists()) {
+			if(destination.exists() && !appendToFile) {
 				destination.delete();
 			}
-			destination.createNewFile();
+			if(!destination.exists())
+				destination.createNewFile();
 
 			GetMethod get = new GetMethod(url.toString());
 			HttpClient httpClient = new HttpClient();
@@ -72,11 +73,16 @@ public class DownloadImpl extends Download {
 			//get the response body as stream 
 			InputStream input= get.getResponseBodyAsStream();
 			//get the output stream for the file 
-			OutputStream output= new FileOutputStream(destination);
+			OutputStream output= new FileOutputStream(destination,appendToFile);
 			//download file
-			int length = IOUtils.copy(input, output);
-			
-			System.out.println(" Length : "+length);
+			try {
+				int length = IOUtils.copy(input, output);
+				System.out.println(" Length : "+length);
+			}finally {
+				input.close();
+				output.flush();
+				output.close();
+			}
  			
 		} catch (Exception e) {
 			e.printStackTrace();

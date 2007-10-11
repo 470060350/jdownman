@@ -13,6 +13,8 @@ import net.effigent.jdownman.DownloadException;
 import net.effigent.jdownman.DownloadListener;
 import net.effigent.jdownman.Download.PRIORITY;
 import net.effigent.jdownman.bind.Binder;
+import net.effigent.jdownman.checksum.ChecksumManager;
+import net.effigent.jdownman.checksum.MD5ChecksumManager;
 import net.effigent.jdownman.queue.DownloadQueue;
 import net.effigent.jdownman.split.DefaultSplitter;
 import net.effigent.jdownman.split.Splitter;
@@ -83,7 +85,17 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	/**
 	 * 
 	 */
+	ChecksumManager checksumManager = null;
+	
+	/**
+	 * 
+	 */
 	DownloadWorkManager workManager = null;
+	
+	/**
+	 * 
+	 */
+	boolean discardPartialChunks = true;
 	
 
 	/**
@@ -114,12 +126,16 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 		if(uidGenerator == null) {
 			throw new DownloadException("UID generator is not set");
 		}
+		
+		if(checksumManager == null) {
+			checksumManager = new MD5ChecksumManager();
+		}
 
 		// if splitter is not set .... use the default splitter 
 		if(splitter == null) {
 			splitter = new DefaultSplitter();
 		}
-
+		
 		//set the download queue
 		workManager.setDownloadQueue(downloadQueue);
 		workManager.start(); 
@@ -138,12 +154,12 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	 * @param destinationFile
 	 * @param urls
 	 * @param listener
-	 * @param md5
+	 * @param checksum
 	 * @param length
 	 * @throws DownloadException
 	 */
 
-	public void downloadFile(File destinationFile, URL[] urls, DownloadListener listener, Object md5, long length,Download.PRIORITY priority) throws DownloadException {
+	public void downloadFile(File destinationFile, URL[] urls, DownloadListener listener, Object checksum, long length,Download.PRIORITY priority) throws DownloadException {
 
 		if(!initialized) {
 			throw new DownloadException("DownloadManager not initialized yet");
@@ -162,7 +178,16 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 		String uid = uidGenerator.generateNewUID();
 		download.setID(uid);
 		download.setPriority(priority);
-		download.setExpectedMD5(md5);
+		
+		String checksumStr = null;
+		if(checksum != null) {
+			if(checksumManager == null)
+				checksumStr = checksum.toString();
+			else
+				checksumStr = checksumManager.toChecksumString(checksum);
+		}
+		
+		download.setExpectedChecksum(checksumStr);
 		download.setFile(destinationFile);
 		download.setTotalFileLength(length);
 		download.setUrls(urls);
@@ -306,6 +331,28 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	 */
 	public void setDELIMITER(String delimiter) {
 		DELIMITER = delimiter;
+	}
+
+
+
+
+
+	/**
+	 * @return the discardPartialChunks
+	 */
+	public boolean isDiscardPartialChunks() {
+		return discardPartialChunks;
+	}
+
+
+
+
+
+	/**
+	 * @param discardPartialChunks the discardPartialChunks to set
+	 */
+	public void setDiscardPartialChunks(boolean discardPartialChunks) {
+		this.discardPartialChunks = discardPartialChunks;
 	}
 	
 	
