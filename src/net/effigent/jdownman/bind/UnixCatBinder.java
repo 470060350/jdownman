@@ -54,18 +54,33 @@ public class UnixCatBinder implements Binder {
 
 		try {
 		
+			StringBuffer catCommandBuffer = new StringBuffer("cat ");
 			// merge each chunk
 			for(ChunkDownload chunk : chunks) {
 				String filePath = chunk.getChunkFilePath();
 				File chunkFile = new File(filePath);
-				String catCommand = "cat "+chunkFile.getAbsolutePath()+" >> "+destination.getAbsolutePath();
-				System.out.println("\n\n\t\t$$$$$$$$$$$$$$ Executing CAT command : "+catCommand);
-				Process p = Runtime.getRuntime().exec(catCommand);
+				catCommandBuffer.append(chunkFile.getAbsoluteFile()).append(" ");
+			}
 			
-				System.out.println("$$$$$$$$$ Executed CAT " + p.waitFor()+"\n\n");
+			catCommandBuffer.append(" >> ").append(destination.getAbsolutePath());
+			String catCommand = catCommandBuffer.toString();
+			String[] args = {"sh","-c",catCommand};
+			System.out.println("\n\n\t\t$$$$$$$$$$$$$$ Executing CAT command : "+catCommand);
+			
+			Process p = Runtime.getRuntime().exec(args);
+			
+			System.out.println("$$$$$$$$$ Executed CAT " + p.waitFor()+"\n\n");
+			
+			for(ChunkDownload chunk : chunks) {
+				String filePath = chunk.getChunkFilePath();
+				File chunkFile = new File(filePath);
 				
 				chunkFile.delete();
 			}
+			
+			
+			
+			
 			//delete the work directory.
 			download.getWorkDir().delete();
 			// now the download is complete.
