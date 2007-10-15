@@ -41,6 +41,22 @@ public abstract class AbstractDownloadManager implements DownloadManager {
 		downloadFile(destinationFile,urls,listener,null,-1,PRIORITY.NORMAL);
 	}
 
+
+
+	/**
+	 * 
+	 * @param destinationFile
+	 * @param urls
+	 * @param priority
+	 * @param listener
+	 * @throws DownloadException
+	 */
+
+	public void downloadFile(File destinationFile, URL[] urls, PRIORITY priority, DownloadListener listener) throws DownloadException {
+		downloadFile(destinationFile,urls,listener,null,-1,priority);
+	}
+	
+		
 	/**
 	 * 
 	 * @param destinationFile

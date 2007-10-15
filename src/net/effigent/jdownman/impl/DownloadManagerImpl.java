@@ -354,6 +354,7 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	public void setDiscardPartialChunks(boolean discardPartialChunks) {
 		this.discardPartialChunks = discardPartialChunks;
 	}
-	
-	
+
+
+
 }
