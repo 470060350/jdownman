@@ -37,6 +37,16 @@ public interface DownloadManager {
 	 * 
 	 * @param destinationFile
 	 * @param urls
+	 * @param priority
+	 * @param listener
+	 * @throws DownloadException
+	 */
+	public void downloadFile(File destinationFile,URL[] urls,PRIORITY priority,DownloadListener listener) throws DownloadException;
+	
+	/**
+	 * 
+	 * @param destinationFile
+	 * @param urls
 	 * @param checksum
 	 * @param length
 	 * @throws DownloadException
