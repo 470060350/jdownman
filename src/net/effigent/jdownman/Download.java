@@ -455,10 +455,12 @@ public abstract class Download  implements Serializable{
 			if (logger.isDebugEnabled())
 				logger.debug("Download "+ID+" started at : "+commencementTime);
 			System.out.println("%%% Download started at : "+commencementTime);
-			
+			status = STATUS.STARTED;
 		}
 		
+		System.out.println(" ********************************  invoking Listeners for donwloadStart ");
 		for(DownloadListener listener : listeners) {
+			System.out.println(" ********************************  Listener invoked : "+listener);
 			if(ongoing == 1)
 				listener.downloadStarted();
 			listener.chunkDownloadStarted(download.getId());
@@ -478,6 +480,7 @@ public abstract class Download  implements Serializable{
 		if(pending == 0) {
 			//no more pending now .... 			
 			binder.bindDownload(this);
+			status = STATUS.COMPLETE;
 		}
 
 		for(DownloadListener listener : listeners) {
