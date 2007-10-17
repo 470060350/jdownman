@@ -159,7 +159,7 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 	 * @throws DownloadException
 	 */
 
-	public void downloadFile(File destinationFile, URL[] urls, DownloadListener listener, Object checksum, long length,Download.PRIORITY priority) throws DownloadException {
+	public Object downloadFile(File destinationFile, URL[] urls, DownloadListener listener, Object checksum, long length,Download.PRIORITY priority) throws DownloadException {
 
 		if(!initialized) {
 			throw new DownloadException("DownloadManager not initialized yet");
@@ -193,15 +193,18 @@ public class DownloadManagerImpl extends AbstractDownloadManager{
 		download.setUrls(urls);
 		download.setParentWorkDir(workDir);
 		download.setDownloadRequestTime(new Date());
-		download.addListener(listener);
 		download.setDELIMITER(DELIMITER);
 		//run the download thorugh the splitter 
 		download.split(splitter);
 		download.setBinder(binder);
 		//initialize
 		download.initialize();
+		//add the listeners now that the download has been initialized
+		download.addListener(listener);
 		//now that the download information has be collated .. enqueue the download
 		downloadQueue.enqueueDownload(download);
+		
+		return uid;
 	}
 
 

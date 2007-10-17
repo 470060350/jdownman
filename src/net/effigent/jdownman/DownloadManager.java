@@ -22,7 +22,7 @@ public interface DownloadManager {
 	 * @param destinationFile
 	 * @param urls
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,PRIORITY priority) throws DownloadException;
+	public Object downloadFile(File destinationFile,URL[] urls,PRIORITY priority) throws DownloadException;
 
 	/**
 	 * 
@@ -31,7 +31,7 @@ public interface DownloadManager {
 	 * @param listener
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,DownloadListener listener) throws DownloadException;
+	public Object downloadFile(File destinationFile,URL[] urls,DownloadListener listener) throws DownloadException;
 
 	/**
 	 * 
@@ -41,7 +41,7 @@ public interface DownloadManager {
 	 * @param listener
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,PRIORITY priority,DownloadListener listener) throws DownloadException;
+	public Object downloadFile(File destinationFile,URL[] urls,PRIORITY priority,DownloadListener listener) throws DownloadException;
 	
 	/**
 	 * 
@@ -51,7 +51,7 @@ public interface DownloadManager {
 	 * @param length
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,Object checksum, long length) throws DownloadException;
+	public Object downloadFile(File destinationFile,URL[] urls,Object checksum, long length) throws DownloadException;
 
 	/**
 	 * 
@@ -62,7 +62,7 @@ public interface DownloadManager {
 	 * @param length
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile,URL[] urls,DownloadListener listener, Object checksum, long length,PRIORITY priority) throws DownloadException;
+	public Object downloadFile(File destinationFile,URL[] urls,DownloadListener listener, Object checksum, long length,PRIORITY priority) throws DownloadException;
 
 
 }

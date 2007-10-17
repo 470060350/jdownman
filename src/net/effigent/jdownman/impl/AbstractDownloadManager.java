@@ -24,9 +24,9 @@ public abstract class AbstractDownloadManager implements DownloadManager {
 	 * @param destinationFile
 	 * @param urls
 	 */
-	public void downloadFile(File destinationFile, URL[] urls,PRIORITY priority)
+	public Object downloadFile(File destinationFile, URL[] urls,PRIORITY priority)
 			throws DownloadException {
-		downloadFile(destinationFile,urls,null,null,-1,priority);
+		return downloadFile(destinationFile,urls,null,null,-1,priority);
 	}
 
 	/**
@@ -36,9 +36,9 @@ public abstract class AbstractDownloadManager implements DownloadManager {
 	 * @param listener
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile, URL[] urls,
+	public Object downloadFile(File destinationFile, URL[] urls,
 			DownloadListener listener) throws DownloadException {
-		downloadFile(destinationFile,urls,listener,null,-1,PRIORITY.NORMAL);
+		return downloadFile(destinationFile,urls,listener,null,-1,PRIORITY.NORMAL);
 	}
 
 
@@ -52,8 +52,8 @@ public abstract class AbstractDownloadManager implements DownloadManager {
 	 * @throws DownloadException
 	 */
 
-	public void downloadFile(File destinationFile, URL[] urls, PRIORITY priority, DownloadListener listener) throws DownloadException {
-		downloadFile(destinationFile,urls,listener,null,-1,priority);
+	public Object downloadFile(File destinationFile, URL[] urls, PRIORITY priority, DownloadListener listener) throws DownloadException {
+		return downloadFile(destinationFile,urls,listener,null,-1,priority);
 	}
 	
 		
@@ -65,9 +65,9 @@ public abstract class AbstractDownloadManager implements DownloadManager {
 	 * @param length
 	 * @throws DownloadException
 	 */
-	public void downloadFile(File destinationFile, URL[] urls, Object checksum,
+	public Object downloadFile(File destinationFile, URL[] urls, Object checksum,
 			long length) throws DownloadException {
-		downloadFile(destinationFile,urls,null,checksum,length,PRIORITY.NORMAL);
+		return downloadFile(destinationFile,urls,null,checksum,length,PRIORITY.NORMAL);
 	}
 
 

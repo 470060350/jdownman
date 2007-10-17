@@ -35,7 +35,7 @@ public class SimpleDownloadManager extends AbstractDownloadManager implements Do
 	 * - downloads once, no failure recovery or anything
 	 * - no checksum check
 	 */
-	public void downloadFile(File destinationFile, URL[] urls,
+	public Object downloadFile(File destinationFile, URL[] urls,
 			DownloadListener listener, Object checksum,long length,PRIORITY priority) throws DownloadException{
 		
 		URL url = urls[0];
@@ -84,6 +84,9 @@ public class SimpleDownloadManager extends AbstractDownloadManager implements Do
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		
+		return null;
 
 	}
 
